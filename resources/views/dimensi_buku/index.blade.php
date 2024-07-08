@@ -12,14 +12,21 @@
             display: block;
         }
 
-        table {
-            margin-top: 20px;
+        .table-container {
             width: 80%;
             margin-left: auto;
             margin-right: auto;
+            overflow: auto; /* Mengaktifkan scroll baik secara vertikal maupun horizontal */
+            max-height: 400px; /* Membatasi tinggi maksimal untuk memicu scroll vertikal jika tabel terlalu tinggi */
+        }
+
+        table {
+            width: 100%; /* Ubah dari 80% menjadi 100% agar tabel menyesuaikan dengan pembungkus */
+            margin-top: 20px;
             border-collapse: collapse;
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+            min-width: 800px; /* Pastikan lebar tabel cukup besar untuk memicu scroll horizontal */
         }
 
         table th, table td {
@@ -119,35 +126,37 @@
 
     <a href="{{ route('dimensibuku.create') }}">Tambah Buku</a>
 
-    <table id="bookTable">
-        <thead>
-            <tr>
-                <th>Nama Buku</th>
-                <th>Harga</th>
-                <th>Jumlah Halaman</th>
-                <th>Rating</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($books as $book)
+    <div class="table-container">
+        <table id="bookTable">
+            <thead>
                 <tr>
-                    <td>{{ $book->Nama_Buku }}</td>
-                    <td>{{ $book->Harga }}</td>
-                    <td>{{ $book->Jumlah_Halaman }}</td>
-                    <td>{{ $book->Rating }}</td>
-                    <td>
-                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                        <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit">Hapus</button>
-                        </form>
-                    </td>
+                    <th>Nama Buku</th>
+                    <th>Harga</th>
+                    <th>Jumlah Halaman</th>
+                    <th>Rating</th>
+                    <th>Aksi</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($books as $book)
+                    <tr>
+                        <td>{{ $book->Nama_Buku }}</td>
+                        <td>{{ $book->Harga }}</td>
+                        <td>{{ $book->Jumlah_Halaman }}</td>
+                        <td>{{ $book->Rating }}</td>
+                        <td>
+                            <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                            <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
     <div class="pagination" id="pagination"></div>
 
