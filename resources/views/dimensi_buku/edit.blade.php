@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
             color: #333;
             display: flex;
             justify-content: center;
@@ -18,44 +18,52 @@
         h1 {
             color: #4CAF50;
             text-align: center;
+            margin-bottom: 20px;
         }
 
         form {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 320px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
+            color: #555;
         }
 
         input[type="text"], input[type="number"] {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
 
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 18px;
             cursor: pointer;
-            margin-top: 10px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
             background-color: #45a049;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -65,17 +73,25 @@
         @method('PUT')
         <h1>Edit Buku</h1>
 
-        <label for="Nama_Buku">Nama Buku:</label>
-        <input type="text" id="Nama_Buku" name="Nama_Buku" value="{{ $book->Nama_Buku }}" required>
+        <div class="form-group">
+            <label for="Nama_Buku">Nama Buku:</label>
+            <input type="text" id="Nama_Buku" name="Nama_Buku" value="{{ $book->Nama_Buku }}" required>
+        </div>
 
-        <label for="Harga">Harga:</label>
-        <input type="number" id="Harga" name="Harga" value="{{ $book->Harga }}" required>
+        <div class="form-group">
+            <label for="Harga">Harga:</label>
+            <input type="number" id="Harga" name="Harga" value="{{ $book->Harga }}" required>
+        </div>
 
-        <label for="Jumlah_Halaman">Jumlah Halaman:</label>
-        <input type="number" id="Jumlah_Halaman" name="Jumlah_Halaman" value="{{ $book->Jumlah_Halaman }}" required>
+        <div class="form-group">
+            <label for="Jumlah_Halaman">Jumlah Halaman:</label>
+            <input type="number" id="Jumlah_Halaman" name="Jumlah_Halaman" value="{{ $book->Jumlah_Halaman }}" required>
+        </div>
 
-        <label for="Rating">Rating:</label>
-        <input type="number" id="Rating" name="Rating" value="{{ $book->Rating }}" required>
+        <div class="form-group">
+            <label for="Rating">Rating:</label>
+            <input type="number" id="Rating" name="Rating" value="{{ $book->Rating }}" required>
+        </div>
 
         <button type="submit">Simpan</button>
     </form>

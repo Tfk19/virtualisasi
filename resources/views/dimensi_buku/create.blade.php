@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
             color: #333;
             display: flex;
             justify-content: center;
@@ -18,44 +18,52 @@
         h1 {
             color: #4CAF50;
             text-align: center;
+            margin-bottom: 20px;
         }
 
         form {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 320px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
+            color: #555;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
         }
 
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 18px;
             cursor: pointer;
-            margin-top: 10px;
+            transition: background-color 0.3s;
         }
 
         button:hover {
             background-color: #45a049;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
         }
 
         input[type="hidden"] {
@@ -68,17 +76,25 @@
         @csrf
         <h1>Tambah Buku</h1>
 
-        <label for="nama_buku">Nama Buku:</label>
-        <input type="text" id="nama_buku" name="nama_buku">
+        <div class="form-group">
+            <label for="nama_buku">Nama Buku:</label>
+            <input type="text" id="nama_buku" name="nama_buku" required>
+        </div>
 
-        <label for="harga">Harga:</label>
-        <input type="text" id="harga" name="harga">
+        <div class="form-group">
+            <label for="harga">Harga:</label>
+            <input type="text" id="harga" name="harga" required>
+        </div>
 
-        <label for="jumlah_halaman">Jumlah Halaman:</label>
-        <input type="text" id="jumlah_halaman" name="jumlah_halaman">
+        <div class="form-group">
+            <label for="jumlah_halaman">Jumlah Halaman:</label>
+            <input type="text" id="jumlah_halaman" name="jumlah_halaman" required>
+        </div>
 
-        <label for="rating">Rating:</label>
-        <input type="text" id="rating" name="rating">
+        <div class="form-group">
+            <label for="rating">Rating:</label>
+            <input type="text" id="rating" name="rating" required>
+        </div>
 
         <!-- Tambahkan input untuk created_at dan updated_at -->
         <input type="hidden" id="created_at" name="created_at" value="{{ now()->format('Y-m-d H:i:s') }}">

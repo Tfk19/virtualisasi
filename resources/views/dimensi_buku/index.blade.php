@@ -7,29 +7,40 @@
     <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-family: 'Arial', sans-serif;
+            margin: 20px 0;
+        }
+
         canvas {
             max-width: 400px;
-            /* Ubah ukuran canvas sesuai kebutuhan */
-            margin: auto;
-            /* Tengahkan canvas */
+            /* Adjust canvas size as needed */
+            margin: 20px auto;
             display: block;
-            /* Agar canvas tetap berada di tengah halaman */
+            /* Center the canvas */
         }
 
         table {
-            margin-top: 20px;
-            /* Jarak antara chart dan tabel */
+            margin: 20px auto;
             width: 80%;
-            margin-left: auto;
-            margin-right: auto;
             border-collapse: collapse;
-            font-family: Arial, sans-serif;
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+            background-color: white;
         }
 
         table th, table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: center;
         }
 
@@ -57,14 +68,18 @@
             font-size: 1em;
         }
 
-        table td form button:hover {
+        table td form button:hover, table td a:hover {
             color: #388E3C;
         }
 
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-            font-family: 'Arial', sans-serif;
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .action-buttons form {
+            display: inline;
         }
 
         a {
@@ -91,29 +106,35 @@
     <a href="{{ route('dimensibuku.create') }}">Tambah Buku</a>
 
     <table>
-        <tr>
-            <th>Nama Buku</th>
-            <th>Harga</th>
-            <th>Jumlah Halaman</th>
-            <th>Rating</th>
-            <th>Aksi</th>
-        </tr>
-        @foreach ($books as $book)
+        <thead>
             <tr>
-                <td>{{ $book->Nama_Buku }}</td>
-                <td>{{ $book->Harga }}</td>
-                <td>{{ $book->Jumlah_Halaman }}</td>
-                <td>{{ $book->Rating }}</td>
-                <td>
-                    <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                    <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit">Hapus</button>
-                    </form>
-                </td>
+                <th>Nama Buku</th>
+                <th>Harga</th>
+                <th>Jumlah Halaman</th>
+                <th>Rating</th>
+                <th>Aksi</th>
             </tr>
-        @endforeach
+        </thead>
+        <tbody>
+            @foreach ($books as $book)
+                <tr>
+                    <td>{{ $book->Nama_Buku }}</td>
+                    <td>{{ $book->Harga }}</td>
+                    <td>{{ $book->Jumlah_Halaman }}</td>
+                    <td>{{ $book->Rating }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                            <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit">Hapus</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
     </table>
 
     <script>
