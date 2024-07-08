@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Daftar Buku</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
         canvas {
             max-width: 400px;
@@ -86,6 +87,12 @@
         a:hover {
             color: #388E3C;
         }
+
+        .filter-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+        }
     </style>
 </head>
 
@@ -97,32 +104,44 @@
     <a href="{{ route('dimensibuku.create') }}">Tambah Buku</a>
 
     <table>
-        <tr>
-            <th>Nama Buku</th>
-            <th>Harga</th>
-            <th>Jumlah Halaman</th>
-            <th>Rating</th>
-            <th>Aksi</th>
-        </tr>
-        @foreach ($books as $book)
+        <thead>
             <tr>
-                <td>{{ $book->Nama_Buku }}</td>
-                <td>{{ $book->Harga }}</td>
-                <td>{{ $book->Jumlah_Halaman }}</td>
-                <td>{{ $book->Rating }}</td>
-                <td>
-                    <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                    <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit">Hapus</button>
-                    </form>
-                </td>
+                <th><input class="filter-input" type="text" placeholder="Filter Nama Buku"></th>
+                <th><input class="filter-input" type="text" placeholder="Filter Harga"></th>
+                <th><input class="filter-input" type="text" placeholder="Filter Jumlah Halaman"></th>
+                <th><input class="filter-input" type="text" placeholder="Filter Rating"></th>
+                <th>Aksi</th>
             </tr>
-        @endforeach
+            <tr>
+                <th>Nama Buku</th>
+                <th>Harga</th>
+                <th>Jumlah Halaman</th>
+                <th>Rating</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($books as $book)
+                <tr>
+                    <td>{{ $book->Nama_Buku }}</td>
+                    <td>{{ $book->Harga }}</td>
+                    <td>{{ $book->Jumlah_Halaman }}</td>
+                    <td>{{ $book->Rating }}</td>
+                    <td>
+                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                        <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
     </table>
 
     <script>
+        // Chart.js pie chart setup
         var ratings = @json($ratings);
 
         var labels = ratings.map(function(rating) {
@@ -157,7 +176,15 @@
                         'rgba(60, 179, 113, 1)',
                         'rgba(0, 128, 0, 1)'
                     ],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    hoverBackgroundColor: [
+                        'rgba(34, 139, 34, 0.6)',
+                        'rgba(50, 205, 50, 0.6)',
+                        'rgba(144, 238, 144, 0.6)',
+                        'rgba(152, 251, 152, 0.6)',
+                        'rgba(60, 179, 113, 0.6)',
+                        'rgba(0, 128, 0, 0.6)'
+                    ]
                 }]
             },
             options: {
@@ -168,13 +195,40 @@
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2);
+                            label: function(context) {
+                                return context.label + ': ' + context.raw;
                             }
+                        }
+                    },
+                    datalabels: {
+                        color: 'black',
+                        formatter: function(value, context) {
+                            let sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = (value * 100 / sum).toFixed(2) + "%";
+                            return percentage;
                         }
                     }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-input').forEach(input => {
+            input.addEventListener('input', function() {
+                let column = input.parentElement.cellIndex;
+                let filter = input.value.toLowerCase();
+                let table = document.querySelector('table');
+                let rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    let cell = row.cells[column].textContent.toLowerCase();
+                    if (cell.includes(filter)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
         });
     </script>
 </body>

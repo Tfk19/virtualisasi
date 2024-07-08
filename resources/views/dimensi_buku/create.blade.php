@@ -36,7 +36,7 @@
             color: #555;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
@@ -83,17 +83,17 @@
 
         <div class="form-group">
             <label for="harga">Harga:</label>
-            <input type="text" id="harga" name="harga" required>
+            <input type="number" id="harga" name="harga" required step="1">
         </div>
 
         <div class="form-group">
             <label for="jumlah_halaman">Jumlah Halaman:</label>
-            <input type="text" id="jumlah_halaman" name="jumlah_halaman" required>
+            <input type="number" id="jumlah_halaman" name="jumlah_halaman" required step="1">
         </div>
 
         <div class="form-group">
             <label for="rating">Rating:</label>
-            <input type="text" id="rating" name="rating" required>
+            <input type="number" id="rating" name="rating" required min="1" max="5">
         </div>
 
         <!-- Tambahkan input untuk created_at dan updated_at -->
