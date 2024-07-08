@@ -69,7 +69,7 @@
         }
 
         table td form button:hover, table td a:hover {
-            color: #388E3C;
+            color: #4CAF50;
         }
 
         .action-buttons {
@@ -123,12 +123,11 @@
                     <td>{{ $book->Jumlah_Halaman }}</td>
                     <td>{{ $book->Rating }}</td>
                     <td>
-                        <div class="action-buttons">
-                            <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                            <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit">Hapus</button>
+                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                    <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit">Hapus</button>
                             </form>
                         </div>
                     </td>
