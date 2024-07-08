@@ -4,43 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Daftar Buku</title>
-    <!-- Include Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-            font-family: 'Arial', sans-serif;
-            margin: 20px 0;
-        }
-
         canvas {
             max-width: 400px;
-            /* Adjust canvas size as needed */
-            margin: 20px auto;
+            margin: auto;
             display: block;
-            /* Center the canvas */
         }
 
         table {
-            margin: 20px auto;
+            margin-top: 20px;
             width: 80%;
+            margin-left: auto;
+            margin-right: auto;
             border-collapse: collapse;
+            font-family: Arial, sans-serif;
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-            background-color: white;
         }
 
         table th, table td {
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 8px;
             text-align: center;
         }
 
@@ -60,7 +44,6 @@
         }
 
         table td a, table td form button {
-            color: #4CAF50;
             text-decoration: none;
             border: none;
             background: none;
@@ -68,18 +51,26 @@
             font-size: 1em;
         }
 
-        table td form button:hover, table td a:hover {
+        table td a {
             color: #4CAF50;
         }
 
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        table td form button {
+            color: red;
         }
 
-        .action-buttons form {
-            display: inline;
+        table td a:hover {
+            color: #388E3C;
+        }
+
+        table td form button:hover {
+            color: darkred;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-family: 'Arial', sans-serif;
         }
 
         a {
@@ -106,34 +97,29 @@
     <a href="{{ route('dimensibuku.create') }}">Tambah Buku</a>
 
     <table>
-        <thead>
+        <tr>
+            <th>Nama Buku</th>
+            <th>Harga</th>
+            <th>Jumlah Halaman</th>
+            <th>Rating</th>
+            <th>Aksi</th>
+        </tr>
+        @foreach ($books as $book)
             <tr>
-                <th>Nama Buku</th>
-                <th>Harga</th>
-                <th>Jumlah Halaman</th>
-                <th>Rating</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($books as $book)
-                <tr>
-                    <td>{{ $book->Nama_Buku }}</td>
-                    <td>{{ $book->Harga }}</td>
-                    <td>{{ $book->Jumlah_Halaman }}</td>
-                    <td>{{ $book->Rating }}</td>
-                    <td>
-                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                <td>{{ $book->Nama_Buku }}</td>
+                <td>{{ $book->Harga }}</td>
+                <td>{{ $book->Jumlah_Halaman }}</td>
+                <td>{{ $book->Rating }}</td>
+                <td>
+                    <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
                     <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
                         @csrf
                         @method('DELETE')
                         <button type="submit">Hapus</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
+                    </form>
+                </td>
+            </tr>
+        @endforeach
     </table>
 
     <script>
