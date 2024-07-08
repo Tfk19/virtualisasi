@@ -86,6 +86,29 @@
         a:hover {
             color: #388E3C;
         }
+
+        .pagination {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .pagination button {
+            margin: 0 2px;
+            padding: 5px 10px;
+            border: 1px solid #4CAF50;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .pagination button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
     </style>
 </head>
 
@@ -96,31 +119,37 @@
 
     <a href="{{ route('dimensibuku.create') }}">Tambah Buku</a>
 
-    <table>
-        <tr>
-            <th>Nama Buku</th>
-            <th>Harga</th>
-            <th>Jumlah Halaman</th>
-            <th>Rating</th>
-            <th>Aksi</th>
-        </tr>
-        @foreach ($books as $book)
+    <table id="bookTable">
+        <thead>
             <tr>
-                <td>{{ $book->Nama_Buku }}</td>
-                <td>{{ $book->Harga }}</td>
-                <td>{{ $book->Jumlah_Halaman }}</td>
-                <td>{{ $book->Rating }}</td>
-                <td>
-                    <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                    <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit">Hapus</button>
-                    </form>
-                </td>
+                <th>Nama Buku</th>
+                <th>Harga</th>
+                <th>Jumlah Halaman</th>
+                <th>Rating</th>
+                <th>Aksi</th>
             </tr>
-        @endforeach
+        </thead>
+        <tbody>
+            @foreach ($books as $book)
+                <tr>
+                    <td>{{ $book->Nama_Buku }}</td>
+                    <td>{{ $book->Harga }}</td>
+                    <td>{{ $book->Jumlah_Halaman }}</td>
+                    <td>{{ $book->Rating }}</td>
+                    <td>
+                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                        <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
     </table>
+
+    <div class="pagination" id="pagination"></div>
 
     <script>
         var ratings = @json($ratings);
@@ -176,6 +205,39 @@
                 }
             }
         });
+
+        const rows = document.querySelectorAll('#bookTable tbody tr');
+        const rowsPerPage = 10;
+        const paginationElement = document.getElementById('pagination');
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        function displayRows(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            rows.forEach((row, index) => {
+                row.style.display = index >= start && index < end ? '' : 'none';
+            });
+        }
+
+        function updatePagination() {
+            paginationElement.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.classList.toggle('active', i === currentPage);
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayRows(currentPage);
+                    updatePagination();
+                });
+                paginationElement.appendChild(button);
+            }
+        }
+
+        displayRows(currentPage);
+        updatePagination();
     </script>
 </body>
 
