@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Daftar Buku</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         canvas {
             max-width: 400px;
@@ -13,26 +14,24 @@
         }
 
         .table-container {
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-            overflow: auto; /* Mengaktifkan scroll baik secara vertikal maupun horizontal */
-            max-height: 400px; /* Membatasi tinggi maksimal untuk memicu scroll vertikal jika tabel terlalu tinggi */
+            width: 80%; /* Mengurangi lebar tabel agar tidak mepet ke kanan dan kiri */
+            margin: 20px auto; /* Menambahkan jarak di sekeliling tabel */
+            overflow: auto;
+            max-height: 240px; /* Tinggi maksimum untuk memicu scroll vertikal */
         }
 
         table {
-            width: 100%; /* Ubah dari 80% menjadi 100% agar tabel menyesuaikan dengan pembungkus */
-            margin-top: 20px;
+            width: 100%;
             border-collapse: collapse;
             font-family: Arial, sans-serif;
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-            min-width: 800px; /* Pastikan lebar tabel cukup besar untuk memicu scroll horizontal */
         }
 
         table th, table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
+            white-space: nowrap; /* Menghindari wrap teks */
         }
 
         table th {
@@ -94,27 +93,30 @@
             color: #388E3C;
         }
 
+        .filter-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+        }
+
         .pagination {
-            text-align: center;
+            display: flex;
+            justify-content: center;
             margin: 20px 0;
         }
 
         .pagination button {
-            margin: 0 2px;
-            padding: 5px 10px;
-            border: 1px solid #4CAF50;
-            background-color: white;
+            border: 1px solid #ddd;
+            padding: 8px;
+            margin: 0 4px;
             cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            font-family: 'Arial', sans-serif;
         }
 
         .pagination button:hover {
-            background-color: #4CAF50;
-            color: white;
-        }
-
-        .pagination button.active {
-            background-color: #4CAF50;
-            color: white;
+            background-color: #388E3C;
         }
     </style>
 </head>
@@ -129,6 +131,13 @@
     <div class="table-container">
         <table id="bookTable">
             <thead>
+                <tr>
+                    <th><input class="filter-input" type="text" placeholder="Filter Nama Buku"></th>
+                    <th><input class="filter-input" type="text" placeholder="Filter Harga"></th>
+                    <th><input class="filter-input" type="text" placeholder="Filter Jumlah Halaman"></th>
+                    <th><input class="filter-input" type="text" placeholder="Filter Rating"></th>
+                    <th>Aksi</th>
+                </tr>
                 <tr>
                     <th>Nama Buku</th>
                     <th>Harga</th>
@@ -158,9 +167,10 @@
         </table>
     </div>
 
-    <div class="pagination" id="pagination"></div>
+    <div class="pagination" id="paginationControls"></div>
 
     <script>
+        // Chart.js pie chart setup
         var ratings = @json($ratings);
 
         var labels = ratings.map(function(rating) {
@@ -170,6 +180,8 @@
         var data = ratings.map(function(rating) {
             return rating.total;
         });
+
+        var totalBooks = data.reduce((a, b) => a + b, 0);
 
         var ctx = document.getElementById('myPieChart').getContext('2d');
         var myPieChart = new Chart(ctx, {
@@ -195,7 +207,15 @@
                         'rgba(60, 179, 113, 1)',
                         'rgba(0, 128, 0, 1)'
                     ],
-                    borderWidth: 1
+                    borderWidth: 1,
+                    hoverBackgroundColor: [
+                        'rgba(34, 139, 34, 0.5)',
+                        'rgba(50, 205, 50, 0.5)',
+                        'rgba(144, 238, 144, 0.5)',
+                        'rgba(152, 251, 152, 0.5)',
+                        'rgba(60, 179, 113, 0.5)',
+                        'rgba(0, 128, 0, 0.5)'
+                    ]
                 }]
             },
             options: {
@@ -204,49 +224,105 @@
                     legend: {
                         position: 'top',
                     },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            let datasets = ctx.chart.data.datasets;
+                            if (datasets.indexOf(ctx.dataset) === datasets.length - 1) {
+                                let sum = datasets[0].data.reduce((a, b) => a + b, 0);
+                                let percentage = (value / sum * 100).toFixed(2) + '%';
+                                return percentage;
+                            } else {
+                                return percentage;
+                            }
+                        },
+                        color: '#000',
+                        font: {
+                            weight: 'bold'
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2);
+                                var percentage = ((tooltipItem.raw / totalBooks) * 100).toFixed(2);
+                                return tooltipItem.label + ': ' + tooltipItem.raw + ' (' + percentage + '%)';
                             }
                         }
                     }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
-        const rows = document.querySelectorAll('#bookTable tbody tr');
+        // Filter functionality
+        document.querySelectorAll('.filter-input').forEach(input => {
+            input.addEventListener('input', function() {
+                let column = input.parentElement.cellIndex;
+                let filter = input.value.toLowerCase();
+                let table = document.querySelector('table');
+                let rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    let cell = row.cells[column].textContent.toLowerCase();
+                    if (cell.includes(filter)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Pagination functionality
         const rowsPerPage = 10;
-        const paginationElement = document.getElementById('pagination');
         let currentPage = 1;
-        const totalPages = Math.ceil(rows.length / rowsPerPage);
+        const table = document.getElementById('bookTable');
+        const tbody = table.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const paginationControls = document.getElementById('paginationControls');
 
         function displayRows(page) {
             const start = (page - 1) * rowsPerPage;
             const end = start + rowsPerPage;
 
             rows.forEach((row, index) => {
-                row.style.display = index >= start && index < end ? '' : 'none';
+                if (index >= start && index < end) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
         }
 
-        function updatePagination() {
-            paginationElement.innerHTML = '';
-            for (let i = 1; i <= totalPages; i++) {
+        function setupPagination() {
+            const pageCount = Math.ceil(rows.length / rowsPerPage);
+            paginationControls.innerHTML = '';
+
+            for (let i = 1; i <= pageCount; i++) {
                 const button = document.createElement('button');
                 button.textContent = i;
-                button.classList.toggle('active', i === currentPage);
                 button.addEventListener('click', () => {
                     currentPage = i;
                     displayRows(currentPage);
-                    updatePagination();
+                    updatePaginationControls();
                 });
-                paginationElement.appendChild(button);
+                paginationControls.appendChild(button);
             }
+
+            updatePaginationControls();
+        }
+
+        function updatePaginationControls() {
+            const buttons = paginationControls.querySelectorAll('button');
+            buttons.forEach((button, index) => {
+                if (index + 1 === currentPage) {
+                    button.style.backgroundColor = '#388E3C';
+                } else {
+                    button.style.backgroundColor = '#4CAF50';
+                }
+            });
         }
 
         displayRows(currentPage);
-        updatePagination();
+        setupPagination();
     </script>
 </body>
 

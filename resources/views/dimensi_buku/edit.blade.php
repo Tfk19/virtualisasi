@@ -13,6 +13,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            position: relative;
         }
 
         h1 {
@@ -65,9 +66,28 @@
         .form-group {
             margin-bottom: 15px;
         }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
+    <a href="{{ route('dimensibuku.index') }}" class="back-link">Back</a>
+
     <form action="{{ route('dimensibuku.update', $book->ID_Buku) }}" method="POST">
         @csrf
         @method('PUT')
@@ -80,20 +100,29 @@
 
         <div class="form-group">
             <label for="Harga">Harga:</label>
-            <input type="number" id="Harga" name="Harga" value="{{ $book->Harga }}" required>
+            <input type="number" id="Harga" name="Harga" value="{{ $book->Harga }}" required step="1">
         </div>
 
         <div class="form-group">
             <label for="Jumlah_Halaman">Jumlah Halaman:</label>
-            <input type="number" id="Jumlah_Halaman" name="Jumlah_Halaman" value="{{ $book->Jumlah_Halaman }}" required>
+            <input type="number" id="Jumlah_Halaman" name="Jumlah_Halaman" value="{{ $book->Jumlah_Halaman }}" required step="1">
         </div>
 
         <div class="form-group">
             <label for="Rating">Rating:</label>
-            <input type="number" id="Rating" name="Rating" value="{{ $book->Rating }}" required>
+            <input type="number" id="Rating" name="Rating" value="{{ $book->Rating }}" required min="1" max="5">
         </div>
 
         <button type="submit">Simpan</button>
     </form>
+
+    <script>
+        document.getElementById('Rating').addEventListener('input', function (e) {
+            let value = parseInt(e.target.value);
+            if (value > 5) {
+                e.target.value = 5;
+            }
+        });
+    </script>
 </body>
 </html>
