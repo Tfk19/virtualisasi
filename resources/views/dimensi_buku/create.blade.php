@@ -13,6 +13,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            position: relative;
         }
 
         h1 {
@@ -36,7 +37,7 @@
             color: #555;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             width: 100%;
             padding: 12px;
             margin-bottom: 15px;
@@ -69,9 +70,28 @@
         input[type="hidden"] {
             display: none;
         }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
+    <a href="{{ route('dimensibuku.index') }}" class="back-link">Back</a>
+
     <form action="{{ route('dimensibuku.store') }}" method="POST">
         @csrf
         <h1>Tambah Buku</h1>
@@ -83,24 +103,32 @@
 
         <div class="form-group">
             <label for="harga">Harga:</label>
-            <input type="text" id="harga" name="harga" required>
+            <input type="number" id="harga" name="harga" required step="1">
         </div>
 
         <div class="form-group">
             <label for="jumlah_halaman">Jumlah Halaman:</label>
-            <input type="text" id="jumlah_halaman" name="jumlah_halaman" required>
+            <input type="number" id="jumlah_halaman" name="jumlah_halaman" required step="1">
         </div>
 
         <div class="form-group">
             <label for="rating">Rating:</label>
-            <input type="text" id="rating" name="rating" required>
+            <input type="number" id="rating" name="rating" required min="1" max="5">
         </div>
 
-        <!-- Tambahkan input untuk created_at dan updated_at -->
         <input type="hidden" id="created_at" name="created_at" value="{{ now()->format('Y-m-d H:i:s') }}">
         <input type="hidden" id="updated_at" name="updated_at" value="{{ now()->format('Y-m-d H:i:s') }}">
 
         <button type="submit">Simpan</button>
     </form>
+
+    <script>
+        document.getElementById('rating').addEventListener('input', function (e) {
+            let value = parseInt(e.target.value);
+            if (value > 5) {
+                e.target.value = 5;
+            }
+        });
+    </script>
 </body>
 </html>
