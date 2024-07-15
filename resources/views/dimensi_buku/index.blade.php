@@ -14,10 +14,10 @@
         }
 
         .table-container {
-            width: 80%; /* Mengurangi lebar tabel agar tidak mepet ke kanan dan kiri */
-            margin: 20px auto; /* Menambahkan jarak di sekeliling tabel */
+            width: 80%;
+            margin: 20px auto;
             overflow: auto;
-            max-height: 240px; /* Tinggi maksimum untuk memicu scroll vertikal */
+            max-height: 240px;
         }
 
         table {
@@ -27,11 +27,12 @@
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
         }
 
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
-            white-space: nowrap; /* Menghindari wrap teks */
+            white-space: nowrap;
         }
 
         table th {
@@ -49,12 +50,16 @@
             background-color: #ddd;
         }
 
-        table td a, table td form button {
+        table td a,
+        table td form button {
             text-decoration: none;
             border: none;
             background: none;
             cursor: pointer;
             font-size: 1em;
+            display: inline-block;
+            margin: 2px;
+            padding: 6px 10px;
         }
 
         table td a {
@@ -136,7 +141,7 @@
                     <th><input class="filter-input" type="text" placeholder="Filter Harga"></th>
                     <th><input class="filter-input" type="text" placeholder="Filter Jumlah Halaman"></th>
                     <th><input class="filter-input" type="text" placeholder="Filter Rating"></th>
-                    <th>Aksi</th>
+                    <th></th>
                 </tr>
                 <tr>
                     <th>Nama Buku</th>
@@ -148,20 +153,22 @@
             </thead>
             <tbody>
                 @foreach ($books as $book)
-                    <tr>
-                        <td>{{ $book->Nama_Buku }}</td>
-                        <td>{{ $book->Harga }}</td>
-                        <td>{{ $book->Jumlah_Halaman }}</td>
-                        <td>{{ $book->Rating }}</td>
-                        <td>
-                            <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                            <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ $book->Nama_Buku }}</td>
+                    <td>{{ $book->Harga }}</td>
+                    <td>{{ $book->Jumlah_Halaman }}</td>
+                    <td>{{ $book->Rating }}</td>
+                    <td>
+                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                        <button class="save-btn">Save</button>
+                        <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST"
+                            style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
@@ -249,8 +256,7 @@
                         }
                     }
                 }
-            },
-            plugins: [ChartDataLabels]
+            }
         });
 
         // Filter functionality
@@ -323,6 +329,53 @@
 
         displayRows(currentPage);
         setupPagination();
+
+        // Edit inline and Save functionality
+        rows.forEach(row => {
+            const cells = row.cells;
+
+            for (let i = 0; i < cells.length - 1; i++) {
+                const cell = cells[i];
+                cell.addEventListener('click', function() {
+                    if (!cell.querySelector('input')) {
+                        const value = cell.textContent.trim();
+                        cell.innerHTML = `<input type="text" value="${value}">`;
+                    }
+                });
+            }
+
+            const actionCell = cells[cells.length - 1];
+            const editButton = actionCell.querySelector('a');
+            editButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                // Tambahkan logika edit di sini sesuai kebutuhan
+            });
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save';
+            saveButton.classList.add('save-btn');
+            saveButton.addEventListener('click', function() {
+                const inputs = row.querySelectorAll('input');
+                const updatedData = {
+                    Nama_Buku: inputs[0].value,
+                    Harga: inputs[1].value,
+                    Jumlah_Halaman: inputs[2].value,
+                    Rating: inputs[3].value
+                };
+
+                // Simpan logika untuk mengirim data perubahan ke backend di sini
+                console.log(updatedData); // Gantikan dengan logika penyimpanan yang sesuai
+
+                // Update tampilan setelah menyimpan (opsional)
+                cells.forEach((cell, index) => {
+                    if (index < cells.length - 1) {
+                        cell.textContent = inputs[index].value;
+                    }
+                });
+            });
+
+            actionCell.appendChild(saveButton);
+        });
     </script>
 </body>
 
