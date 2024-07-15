@@ -12,3 +12,4 @@ Route::get('/dimensibuku/{id}/edit', [DimensiBukuController::class, 'edit'])->na
 Route::put('/dimensibuku/{id}', [DimensiBukuController::class, 'update'])->name('dimensibuku.update');
 Route::delete('/dimensibuku/{id}', [DimensiBukuController::class, 'destroy'])->name('dimensibuku.destroy');
 Route::get('/dimensi_buku', [DimensiBukuController::class, 'index'])->name('dimensibuku.index');
+Route::post('/dimensibuku/update/{id}', [DimensiBukuController::class, 'updateInline'])->name('dimensibuku.updateInline');
