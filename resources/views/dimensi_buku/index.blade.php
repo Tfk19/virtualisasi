@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Daftar Buku</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         canvas {
             max-width: 400px;
@@ -14,10 +14,10 @@
         }
 
         .table-container {
-            width: 80%; /* Mengurangi lebar tabel agar tidak mepet ke kanan dan kiri */
-            margin: 20px auto; /* Menambahkan jarak di sekeliling tabel */
+            width: 80%;
+            margin: 20px auto;
             overflow: auto;
-            max-height: 240px; /* Tinggi maksimum untuk memicu scroll vertikal */
+            max-height: 240px;
         }
 
         table {
@@ -31,7 +31,7 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
-            white-space: nowrap; /* Menghindari wrap teks */
+            white-space: nowrap;
         }
 
         table th {
@@ -118,9 +118,12 @@
         .pagination button:hover {
             background-color: #388E3C;
         }
+
+        .editing {
+            background-color: white;
+        }
     </style>
 </head>
-
 <body>
     <h1>Daftar Buku</h1>
 
@@ -136,7 +139,7 @@
                     <th><input class="filter-input" type="text" placeholder="Filter Harga"></th>
                     <th><input class="filter-input" type="text" placeholder="Filter Jumlah Halaman"></th>
                     <th><input class="filter-input" type="text" placeholder="Filter Rating"></th>
-                    <th>Aksi</th>
+                    <th></th>
                 </tr>
                 <tr>
                     <th>Nama Buku</th>
@@ -148,12 +151,13 @@
             </thead>
             <tbody>
                 @foreach ($books as $book)
-                    <tr>
-                        <td>{{ $book->Nama_Buku }}</td>
-                        <td>{{ $book->Harga }}</td>
-                        <td>{{ $book->Jumlah_Halaman }}</td>
-                        <td>{{ $book->Rating }}</td>
+                    <tr data-id="{{ $book->ID_Buku }}">
+                        <td contenteditable="true" data-column="Nama_Buku">{{ $book->Nama_Buku }}</td>
+                        <td contenteditable="true" data-column="Harga">{{ $book->Harga }}</td>
+                        <td contenteditable="true" data-column="Jumlah_Halaman">{{ $book->Jumlah_Halaman }}</td>
+                        <td contenteditable="true" data-column="Rating">{{ $book->Rating }}</td>
                         <td>
+                            <button class="save-button" style="display: none;">Save</button>
                             <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
                             <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
                                 @csrf
@@ -232,46 +236,17 @@
                                 let percentage = (value / sum * 100).toFixed(2) + '%';
                                 return percentage;
                             } else {
-                                return percentage;
+                                return null;
                             }
                         },
                         color: '#000',
-                        font: {
-                            weight: 'bold'
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var percentage = ((tooltipItem.raw / totalBooks) * 100).toFixed(2);
-                                return tooltipItem.label + ': ' + tooltipItem.raw + ' (' + percentage + '%)';
-                            }
-                        }
                     }
                 }
             },
             plugins: [ChartDataLabels]
         });
 
-        // Filter functionality
-        document.querySelectorAll('.filter-input').forEach(input => {
-            input.addEventListener('input', function() {
-                let column = input.parentElement.cellIndex;
-                let filter = input.value.toLowerCase();
-                let table = document.querySelector('table');
-                let rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    let cell = row.cells[column].textContent.toLowerCase();
-                    if (cell.includes(filter)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        });
-
-        // Pagination functionality
+        // Pagination setup
         const rowsPerPage = 10;
         let currentPage = 1;
         const table = document.getElementById('bookTable');
@@ -323,7 +298,88 @@
 
         displayRows(currentPage);
         setupPagination();
+
+        // Inline editing and saving
+        document.querySelectorAll('[contenteditable]').forEach(cell => {
+            cell.addEventListener('focus', function() {
+                this.classList.add('editing');
+            });
+
+            cell.addEventListener('blur', function() {
+                this.classList.remove('editing');
+            });
+
+            cell.addEventListener('input', function() {
+                const row = this.closest('tr');
+                const saveButton = row.querySelector('.save-button');
+                saveButton.style.display = 'inline';
+            });
+        });
+
+        document.querySelectorAll('.save-button').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const row = this.closest('tr');
+        const id = row.dataset.id;
+        const cells = row.querySelectorAll('[contenteditable]');
+        const data = {};
+
+        cells.forEach(cell => {
+            const column = cell.dataset.column;
+            const value = cell.textContent;
+            data[column] = value;
+        });
+
+        $.ajax({
+            url: `/dimensibuku/update/${id}`,
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                ...data
+            },
+            success: function(response) {
+                console.log('Update successful');
+                button.style.display = 'none';
+                // Update chart data and redraw chart
+                updateChartData();
+                // Refresh the page after a successful save
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Update failed:', error);
+            }
+        });
+    });
+});
+
+
+        // Function to update chart data
+        function updateChartData() {
+            // Perform AJAX request to update ratings data
+            $.ajax({
+                url: '/ratings-data',  // Adjust the URL as per your application
+                method: 'GET',
+                success: function(response) {
+                    // Assuming response contains updated ratings data
+                    ratings = response.ratings;
+                    labels = ratings.map(function(rating) {
+                        return 'Rating ' + rating.Rating;
+                    });
+                    data = ratings.map(function(rating) {
+                        return rating.total;
+                    });
+
+                    // Update chart data
+                    myPieChart.data.labels = labels;
+                    myPieChart.data.datasets[0].data = data;
+                    myPieChart.update();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch updated data:', error);
+                }
+            });
+        }
     </script>
 </body>
-
 </html>

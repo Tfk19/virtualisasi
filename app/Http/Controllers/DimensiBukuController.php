@@ -78,4 +78,15 @@ class DimensiBukuController extends Controller
 
     return redirect()->route('dimensibuku.index')->with('success', 'Buku berhasil dihapus');
 }
+public function updateInline(Request $request, $id)
+{
+    $book = DimensiBuku::findOrFail($id);
+    $book->Nama_Buku = $request->input('Nama_Buku');
+    $book->Harga = $request->input('Harga');
+    $book->Jumlah_Halaman = $request->input('Jumlah_Halaman');
+    $book->Rating = $request->input('Rating');
+    $book->save();
+
+    return response()->json(['message' => 'Update successful']);
+}
 }
