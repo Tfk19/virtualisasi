@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Daftar Buku</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         canvas {
             max-width: 400px;
@@ -27,8 +27,7 @@
             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
         }
 
-        table th,
-        table td {
+        table th, table td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
@@ -50,16 +49,12 @@
             background-color: #ddd;
         }
 
-        table td a,
-        table td form button {
+        table td a, table td form button {
             text-decoration: none;
             border: none;
             background: none;
             cursor: pointer;
             font-size: 1em;
-            display: inline-block;
-            margin: 2px;
-            padding: 6px 10px;
         }
 
         table td a {
@@ -123,9 +118,12 @@
         .pagination button:hover {
             background-color: #388E3C;
         }
+
+        .editing {
+            background-color: white;
+        }
     </style>
 </head>
-
 <body>
     <h1>Daftar Buku</h1>
 
@@ -153,22 +151,21 @@
             </thead>
             <tbody>
                 @foreach ($books as $book)
-                <tr>
-                    <td>{{ $book->Nama_Buku }}</td>
-                    <td>{{ $book->Harga }}</td>
-                    <td>{{ $book->Jumlah_Halaman }}</td>
-                    <td>{{ $book->Rating }}</td>
-                    <td>
-                        <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
-                        <button class="save-btn">Save</button>
-                        <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST"
-                            style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit">Hapus</button>
-                        </form>
-                    </td>
-                </tr>
+                    <tr data-id="{{ $book->ID_Buku }}">
+                        <td contenteditable="true" data-column="Nama_Buku">{{ $book->Nama_Buku }}</td>
+                        <td contenteditable="true" data-column="Harga">{{ $book->Harga }}</td>
+                        <td contenteditable="true" data-column="Jumlah_Halaman">{{ $book->Jumlah_Halaman }}</td>
+                        <td contenteditable="true" data-column="Rating">{{ $book->Rating }}</td>
+                        <td>
+                            <button class="save-button" style="display: none;">Save</button>
+                            <a href="{{ route('dimensibuku.edit', ['id' => $book->ID_Buku]) }}">Edit</a>
+                            <form action="{{ route('dimensibuku.destroy', ['id' => $book->ID_Buku]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
@@ -239,45 +236,17 @@
                                 let percentage = (value / sum * 100).toFixed(2) + '%';
                                 return percentage;
                             } else {
-                                return percentage;
+                                return null;
                             }
                         },
                         color: '#000',
-                        font: {
-                            weight: 'bold'
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                var percentage = ((tooltipItem.raw / totalBooks) * 100).toFixed(2);
-                                return tooltipItem.label + ': ' + tooltipItem.raw + ' (' + percentage + '%)';
-                            }
-                        }
                     }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
-        // Filter functionality
-        document.querySelectorAll('.filter-input').forEach(input => {
-            input.addEventListener('input', function() {
-                let column = input.parentElement.cellIndex;
-                let filter = input.value.toLowerCase();
-                let table = document.querySelector('table');
-                let rows = table.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    let cell = row.cells[column].textContent.toLowerCase();
-                    if (cell.includes(filter)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        });
-
-        // Pagination functionality
+        // Pagination setup
         const rowsPerPage = 10;
         let currentPage = 1;
         const table = document.getElementById('bookTable');
@@ -330,53 +299,87 @@
         displayRows(currentPage);
         setupPagination();
 
-        // Edit inline and Save functionality
-        rows.forEach(row => {
-            const cells = row.cells;
-
-            for (let i = 0; i < cells.length - 1; i++) {
-                const cell = cells[i];
-                cell.addEventListener('click', function() {
-                    if (!cell.querySelector('input')) {
-                        const value = cell.textContent.trim();
-                        cell.innerHTML = `<input type="text" value="${value}">`;
-                    }
-                });
-            }
-
-            const actionCell = cells[cells.length - 1];
-            const editButton = actionCell.querySelector('a');
-            editButton.addEventListener('click', function(event) {
-                event.preventDefault();
-                // Tambahkan logika edit di sini sesuai kebutuhan
+        // Inline editing and saving
+        document.querySelectorAll('[contenteditable]').forEach(cell => {
+            cell.addEventListener('focus', function() {
+                this.classList.add('editing');
             });
 
-            const saveButton = document.createElement('button');
-            saveButton.textContent = 'Save';
-            saveButton.classList.add('save-btn');
-            saveButton.addEventListener('click', function() {
-                const inputs = row.querySelectorAll('input');
-                const updatedData = {
-                    Nama_Buku: inputs[0].value,
-                    Harga: inputs[1].value,
-                    Jumlah_Halaman: inputs[2].value,
-                    Rating: inputs[3].value
-                };
-
-                // Simpan logika untuk mengirim data perubahan ke backend di sini
-                console.log(updatedData); // Gantikan dengan logika penyimpanan yang sesuai
-
-                // Update tampilan setelah menyimpan (opsional)
-                cells.forEach((cell, index) => {
-                    if (index < cells.length - 1) {
-                        cell.textContent = inputs[index].value;
-                    }
-                });
+            cell.addEventListener('blur', function() {
+                this.classList.remove('editing');
             });
 
-            actionCell.appendChild(saveButton);
+            cell.addEventListener('input', function() {
+                const row = this.closest('tr');
+                const saveButton = row.querySelector('.save-button');
+                saveButton.style.display = 'inline';
+            });
         });
+
+        document.querySelectorAll('.save-button').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        const row = this.closest('tr');
+        const id = row.dataset.id;
+        const cells = row.querySelectorAll('[contenteditable]');
+        const data = {};
+
+        cells.forEach(cell => {
+            const column = cell.dataset.column;
+            const value = cell.textContent;
+            data[column] = value;
+        });
+
+        $.ajax({
+            url: /dimensibuku/update/${id},
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                ...data
+            },
+            success: function(response) {
+                console.log('Update successful');
+                button.style.display = 'none';
+                // Update chart data and redraw chart
+                updateChartData();
+                // Refresh the page after a successful save
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Update failed:', error);
+            }
+        });
+    });
+});
+
+
+        // Function to update chart data
+        function updateChartData() {
+            // Perform AJAX request to update ratings data
+            $.ajax({
+                url: '/ratings-data',  // Adjust the URL as per your application
+                method: 'GET',
+                success: function(response) {
+                    // Assuming response contains updated ratings data
+                    ratings = response.ratings;
+                    labels = ratings.map(function(rating) {
+                        return 'Rating ' + rating.Rating;
+                    });
+                    data = ratings.map(function(rating) {
+                        return rating.total;
+                    });
+
+                    // Update chart data
+                    myPieChart.data.labels = labels;
+                    myPieChart.data.datasets[0].data = data;
+                    myPieChart.update();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch updated data:', error);
+                }
+            });
+        }
     </script>
 </body>
-
 </html>
